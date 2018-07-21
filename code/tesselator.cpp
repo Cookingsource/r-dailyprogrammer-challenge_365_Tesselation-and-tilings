@@ -59,6 +59,22 @@ int main(int argc, char const *argv[])
     // TODO: rotate de matrix
     // TODO: rotate the symbols
 
+    // (row, column)
+    // (0,0)(0,1)(0,2)   90 (2,0)(1,0)(0,0) 
+    // (1,0)(1,1)(1,2)   -> (2,1)(1,1)(0,1)
+    // (2,0)(2,1)(2,2)      (2,2)(1,2)(0,2)
+    // 
+    // (r,c) => (R - c - 1, r )? 
+    // (0,0) => (2,0)
+    // (0,1) => (1,0)
+    // (0,2) => (0,0)
+    // (1,0) => (2,1)
+    // (1,1) => (1,1)
+    // (1,2) => (0,1)
+    // (2,0) => (2,2)
+    // (2,1) => (1,2)
+    // (2,2) => (0,2)
+
     //  123  90  111  90  321  90  333
     //  123  ->  222  ->  321  ->  222
     //  123      333      321  90  111
@@ -69,11 +85,37 @@ int main(int argc, char const *argv[])
         {
             for( int horizontalRepeats = 0; horizontalRepeats < repeats; ++horizontalRepeats)
             {
-                int mahnhattanDistance = horizontalRepeats + verticalRepeats;
+                int mahnhattanDistance = (horizontalRepeats + verticalRepeats ) % 4;
 
                 for( int charIdx = 0; charIdx < side; ++charIdx)
                 {
-                    printf("%c", *(lines + lineBegins[i]+ charIdx) );
+                    int row = i;
+                    int column = charIdx;
+                    int row90 = side -1  - column;
+                    int column90 = row;
+                    int row180 = side -1 - column90;
+                    int column180 = row90;
+                    int row270 = side -1 - column180;
+                    int column270 = row180;
+                    if(mahnhattanDistance == 0)
+                    {
+                        printf("%c", *(lines + lineBegins[row] + column));
+                    }
+                    else if ( mahnhattanDistance == 1)
+                    {
+                        printf("%c", *(lines + lineBegins[row90] + column90));
+                    }
+                    else if( mahnhattanDistance == 2)
+                    {
+                        printf("%c", *(lines + lineBegins[row180] + column180));
+                    }
+                    else if ( mahnhattanDistance == 3)
+                    {
+                        printf("%c", *(lines + lineBegins[row270] + column270));
+                    }
+
+                    //// Test out not rotating
+                    //printf("%c", *(lines + lineBegins[i]+ charIdx) );
                 }
             }
             printf("\n");
