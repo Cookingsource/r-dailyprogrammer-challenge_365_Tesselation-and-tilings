@@ -28,7 +28,41 @@ static char getRotated(char symbol, int rotationIdx)
         return rotations[indexOfChar][rotationIdx];
 }
 
-static void tesselate(char* lines, int side, int rotationDeg, int repeats)
+static char Sample(const char* lines, int side, int row, int column)
+{
+    return *(lines + ((side + 1) * row) + column);
+}
+
+static char getSymbolFromRotatedMatrix(const char* lines, int side, int row, int column, int rotationIdx)
+{
+    char sampled = 0;
+    if(rotationIdx == 0)
+    {
+        sampled = Sample(lines, side, row, column);
+    }
+    else if ( rotationIdx == 1)
+    {
+        int row90 = side -1  - column;
+        int column90 = row;
+        sampled = Sample(lines, side, row90, column90);
+    }
+    else if( rotationIdx == 2)
+    {
+        int row180 = side -1 - row;
+        int column180 = side -1 - column;
+        sampled = Sample(lines, side, row180, column180);
+    }
+    else if ( rotationIdx == 3)
+    {
+        int row270 = column;
+        int column270 = side -1 - row;
+        char sampled = Sample(lines, side, row270, column270);
+    }
+
+    return getRotated(sampled, rotationIdx);
+}
+
+static void tesselate(const char* lines, int side, int rotationDeg, int repeats)
 {
     // (row, column)
     // (0,0)(0,1)(0,2)   90 (2,0)(1,0)(0,0) 
@@ -67,35 +101,11 @@ static void tesselate(char* lines, int side, int rotationDeg, int repeats)
                 {
                     int row = i;
                     int column = charIdx;
-                    int row90 = side -1  - column;
-                    int column90 = row;
-                    int row180 = side -1 - column90;
-                    int column180 = row90;
-                    int row270 = side -1 - column180;
-                    int column270 = row180;
                     int adjustedRotationIdx = (mahnhattanDistance * rotationIdx) % 4;
                     //printf("Adjusted rotation idx %d \n", adjustedRotationIdx);
 
-                    if(adjustedRotationIdx == 0)
-                    {
-                        char c = *(lines + ((side + 1) * row) + column);
-                        printf("%c", getRotated(c, adjustedRotationIdx));
-                    }
-                    else if ( adjustedRotationIdx == 1)
-                    {
-                        char c = *(lines + ((side + 1)* row90) + column90);
-                        printf("%c",  getRotated(c, adjustedRotationIdx));
-                    }
-                    else if( adjustedRotationIdx == 2)
-                    {
-                        char c = *(lines + ((side + 1) * row180) + column180);
-                        printf("%c",  getRotated(c, adjustedRotationIdx));
-                    }
-                    else if ( adjustedRotationIdx == 3)
-                    {
-                        char c = *(lines + ((side + 1) * row270) + column270);
-                        printf("%c", getRotated(c, adjustedRotationIdx));
-                    }
+                    printf("%c", getSymbolFromRotatedMatrix(lines, side, row, column, adjustedRotationIdx));
+                    
 
                     //// Test out not rotating
                     //printf("%c", *(lines + lineBegins[i]+ charIdx) );
@@ -106,12 +116,11 @@ static void tesselate(char* lines, int side, int rotationDeg, int repeats)
     }
 }
 
-int main(int argc, char const *argv[])
+static void runFromUserInput()
 {
     printf("Regular rotation Tesselate given square ascii \n");
     printf("Rotation(multiples of 90):");
 
-    // NOTE(rafa): No input validation
     int rotation = 0;
     scanf(" %d", &rotation);
 
@@ -158,6 +167,31 @@ int main(int argc, char const *argv[])
     }
 
     tesselate(lines, lineCount, rotation, 2);
+}
+
+static void runExamples()
+{
+    const char* lines = "--x\0--x\0--x\0";
+    tesselate(lines, 3, 90, 2);
+    lines = "####\0#--#\0#++#\0####\0";
+    tesselate(lines, 4, 90, 2);
+    lines = "/\\-/|-\0/\\/-\\/\0||\\\\-\\\0|\\|-|/\0|-\\|/|\0|\\-/-\\\0";
+    tesselate(lines, 6, 90, 2);
+    lines = "&`{!#;\0"
+            "#*#@+#\0"
+            "~/}}?|\0"
+            "'|(==]\0"
+            "\\^)~=*\0"
+            "|?|*<%\0";
+    tesselate(lines, 6, 180, 2);
+}
+
+int main(int argc, char const *argv[])
+{
+    if(argc == 1)
+        runFromUserInput();
+    else
+        runExamples();
 
 
     return 0;
