@@ -28,6 +28,84 @@ static char getRotated(char symbol, int rotationIdx)
         return rotations[indexOfChar][rotationIdx];
 }
 
+static void tesselate(char* lines, int side, int rotationDeg, int repeats)
+{
+    // (row, column)
+    // (0,0)(0,1)(0,2)   90 (2,0)(1,0)(0,0) 
+    // (1,0)(1,1)(1,2)   -> (2,1)(1,1)(0,1)
+    // (2,0)(2,1)(2,2)      (2,2)(1,2)(0,2)
+    // 
+    // (r,c) => (R - c - 1, r )? 
+    // (0,0) => (2,0)
+    // (0,1) => (1,0)
+    // (0,2) => (0,0)
+    // (1,0) => (2,1)
+    // (1,1) => (1,1)
+    // (1,2) => (0,1)
+    // (2,0) => (2,2)
+    // (2,1) => (1,2)
+    // (2,2) => (0,2)
+
+    //  123  90  111  90  321  90  333
+    //  123  ->  222  ->  321  ->  222
+    //  123      333      321  90  111
+
+    int rotationIdx = (rotationDeg % 360 ) / 90;
+
+    printf("base rotation idx %d\n", rotationIdx);
+
+    for ( int verticalRepeats = 0; verticalRepeats < repeats; ++verticalRepeats)
+    { 
+        for(int i = 0; i < side; ++i)
+        {
+            for( int horizontalRepeats = 0; horizontalRepeats < repeats; ++horizontalRepeats)
+            {
+                int mahnhattanDistance = horizontalRepeats + verticalRepeats;
+                //printf("Manhattan distance %d\n", mahnhattanDistance);
+
+                for( int charIdx = 0; charIdx < side; ++charIdx)
+                {
+                    int row = i;
+                    int column = charIdx;
+                    int row90 = side -1  - column;
+                    int column90 = row;
+                    int row180 = side -1 - column90;
+                    int column180 = row90;
+                    int row270 = side -1 - column180;
+                    int column270 = row180;
+                    int adjustedRotationIdx = (mahnhattanDistance * rotationIdx) % 4;
+                    //printf("Adjusted rotation idx %d \n", adjustedRotationIdx);
+
+                    if(adjustedRotationIdx == 0)
+                    {
+                        char c = *(lines + ((side + 1) * row) + column);
+                        printf("%c", getRotated(c, adjustedRotationIdx));
+                    }
+                    else if ( adjustedRotationIdx == 1)
+                    {
+                        char c = *(lines + ((side + 1)* row90) + column90);
+                        printf("%c",  getRotated(c, adjustedRotationIdx));
+                    }
+                    else if( adjustedRotationIdx == 2)
+                    {
+                        char c = *(lines + ((side + 1) * row180) + column180);
+                        printf("%c",  getRotated(c, adjustedRotationIdx));
+                    }
+                    else if ( adjustedRotationIdx == 3)
+                    {
+                        char c = *(lines + ((side + 1) * row270) + column270);
+                        printf("%c", getRotated(c, adjustedRotationIdx));
+                    }
+
+                    //// Test out not rotating
+                    //printf("%c", *(lines + lineBegins[i]+ charIdx) );
+                }
+            }
+            printf("\n");
+        }
+    }
+}
+
 int main(int argc, char const *argv[])
 {
     printf("Regular rotation Tesselate given square ascii \n");
@@ -52,7 +130,7 @@ int main(int argc, char const *argv[])
     int lineCount = 0;
 
     int writeOffset = 0;
-    printf("Write base tile lines\n");
+    //printf("Write base tile lines\n");
     for ( int i = 0; i<side; ++i)
     {
         // printf("Scan for line %d\n",i);
@@ -79,85 +157,8 @@ int main(int argc, char const *argv[])
         printf("[%d] \"%s\"\n", lineBegins[lineIdx],   lines + lineBegins[lineIdx]);
     }
 
-    // all strings are in place
-    // TODO: extend one in each direction
-    // TODO: rotate de matrix
-    // TODO: rotate the symbols
+    tesselate(lines, lineCount, rotation, 2);
 
-    // (row, column)
-    // (0,0)(0,1)(0,2)   90 (2,0)(1,0)(0,0) 
-    // (1,0)(1,1)(1,2)   -> (2,1)(1,1)(0,1)
-    // (2,0)(2,1)(2,2)      (2,2)(1,2)(0,2)
-    // 
-    // (r,c) => (R - c - 1, r )? 
-    // (0,0) => (2,0)
-    // (0,1) => (1,0)
-    // (0,2) => (0,0)
-    // (1,0) => (2,1)
-    // (1,1) => (1,1)
-    // (1,2) => (0,1)
-    // (2,0) => (2,2)
-    // (2,1) => (1,2)
-    // (2,2) => (0,2)
-
-    //  123  90  111  90  321  90  333
-    //  123  ->  222  ->  321  ->  222
-    //  123      333      321  90  111
-    int repeats = 2;
-    int rotationIdx = (rotation % 360 ) / 90;
-
-    printf("base rotation idx %d\n", rotationIdx);
-
-    for ( int verticalRepeats = 0; verticalRepeats < repeats; ++verticalRepeats)
-    { 
-        for(int i = 0; i < lineCount; ++i)
-        {
-            for( int horizontalRepeats = 0; horizontalRepeats < repeats; ++horizontalRepeats)
-            {
-                int mahnhattanDistance = horizontalRepeats + verticalRepeats;
-                //printf("Manhattan distance %d\n", mahnhattanDistance);
-
-                for( int charIdx = 0; charIdx < side; ++charIdx)
-                {
-                    int row = i;
-                    int column = charIdx;
-                    int row90 = side -1  - column;
-                    int column90 = row;
-                    int row180 = side -1 - column90;
-                    int column180 = row90;
-                    int row270 = side -1 - column180;
-                    int column270 = row180;
-                    int adjustedRotationIdx = (mahnhattanDistance * rotationIdx) % 4;
-                    //printf("Adjusted rotation idx %d \n", adjustedRotationIdx);
-
-                    if(adjustedRotationIdx == 0)
-                    {
-                        char c = *(lines + lineBegins[row] + column);
-                        printf("%c", getRotated(c, adjustedRotationIdx));
-                    }
-                    else if ( adjustedRotationIdx == 1)
-                    {
-                        char c = *(lines + lineBegins[row90] + column90);
-                        printf("%c",  getRotated(c, adjustedRotationIdx));
-                    }
-                    else if( adjustedRotationIdx == 2)
-                    {
-                        char c = *(lines + lineBegins[row180] + column180);
-                        printf("%c",  getRotated(c, adjustedRotationIdx));
-                    }
-                    else if ( adjustedRotationIdx == 3)
-                    {
-                        char c = *(lines + lineBegins[row270] + column270);
-                        printf("%c", getRotated(c, adjustedRotationIdx));
-                    }
-
-                    //// Test out not rotating
-                    //printf("%c", *(lines + lineBegins[i]+ charIdx) );
-                }
-            }
-            printf("\n");
-        }
-    }
 
     return 0;
 }
